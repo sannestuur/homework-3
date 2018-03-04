@@ -1,0 +1,12 @@
+{
+  "name": "events-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "me",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.2",
+    "pg": "6",
+    "sequelize": "^4.35.1"
+  }
+}

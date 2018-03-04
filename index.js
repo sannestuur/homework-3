@@ -19,7 +19,8 @@ app.use(function(req, res, next) {
 const Event = sequelize.define('event', {
   title: {
     type: Sequelize.STRING,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   },
   start_date: {
     type: Sequelize.DATEONLY,
@@ -61,20 +62,20 @@ app.get('/events', (req, res) => {
     })
 })
 
-// Create method for creating events
-// app.post('/events', requireUser, (req, res) => {
-//   const event = req.body
-//
-//   Event.create(product)
-//     .then(entity => {
-//       res.status(201)
-//       res.json(entity)
-//     })
-//     .catch(err => {
-//       res.status(422)
-//       res.json({ message: err.message })
-//     })
-// })
+// This method allows you to create new events
+app.post('/events', (req, res) => {
+  const event = req.body
+
+  Event.create(event)
+    .then(entity => {
+      res.status(201)
+      res.json(entity)
+    })
+    .catch(err => {
+      res.status(422)
+      res.json({ message: err.message })
+    })
+})
 
 // Create method for updating events
 

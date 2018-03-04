@@ -1,5 +1,8 @@
 const express = require('express')
 const app = express()
+const bodyParser = require('body-parser')
+app.use(bodyParser.json())
+
 
 var Sequelize = require('sequelize')
 var sequelize = new Sequelize('postgres://postgres:secret@localhost:5432/postgres')
@@ -19,18 +22,61 @@ const Event = sequelize.define('event', {
     allowNull: false
   },
   start_date: {
-    type: Sequelize.DATE,
+    type: Sequelize.DATEONLY,
     allowNull: false
   },
   end_date: {
-    type: Sequelize.DATE,
+    type: Sequelize.DATEONLY,
     allowNull: false
   },
   description: {
     type: Sequelize.STRING,
     allowNull: false
-  },
- {
+  }
+
+},  {
   tableName: 'events',
   timestamps: false
 })
+
+//This method returns a list of only future events (including title, starting date and end date)
+app.get('/events', (req, res) => {
+  const Op = Sequelize.Op;
+  const Now = Date.now();
+
+  Event.findAll({
+    attributes: ['title', 'start_date', 'end_date'],
+    where: {
+      start_date: {
+        [Op.gt]: Now
+      }
+    },
+  })
+    .then(result => {
+      res.json(result)
+    })
+    .catch(err => {
+      res.status(500)
+      res.json({message: 'Something went wrong'})
+    })
+})
+
+// Create method for creating events
+// app.post('/events', requireUser, (req, res) => {
+//   const event = req.body
+//
+//   Event.create(product)
+//     .then(entity => {
+//       res.status(201)
+//       res.json(entity)
+//     })
+//     .catch(err => {
+//       res.status(422)
+//       res.json({ message: err.message })
+//     })
+// })
+
+// Create method for updating events
+
+
+// Create method for deleting events

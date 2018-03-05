@@ -20,7 +20,6 @@ const Event = sequelize.define('event', {
   title: {
     type: Sequelize.STRING,
     allowNull: false,
-    primaryKey: true
   },
   start_date: {
     type: Sequelize.DATEONLY,
@@ -43,7 +42,7 @@ const Event = sequelize.define('event', {
 //This method returns a list of only future events (including title, starting date and end date)
 app.get('/events', (req, res) => {
   const Op = Sequelize.Op;
-  const Now = Date.now();
+  const Now = new Date();
 
   Event.findAll({
     attributes: ['title', 'start_date', 'end_date'],
@@ -65,19 +64,69 @@ app.get('/events', (req, res) => {
 // This method allows you to create new events
 app.post('/events', (req, res) => {
   const event = req.body
+  const Now = new Date();
 
-  Event.create(event)
-    .then(entity => {
-      res.status(201)
-      res.json(entity)
+  if (event.start_date < Now)
+    {res.status(406).send({
+      message: 'This event cannot be added because it started in the past'
     })
-    .catch(err => {
-      res.status(422)
-      res.json({ message: err.message })
+  }
+  else if (event.start_date > event.end_date)
+    {res.status(406).send({
+      message: 'This event cannot be added because its start date is before its end date'
     })
+  }
+  else {
+    Event.create(event)
+      .then(entity => {
+        res.status(201)
+        res.json(entity)
+      })
+      .catch(err => {
+        res.status(422)
+        res.json({ message: err.message })
+      })
+  }
 })
 
 // Create method for updating events
+app.put('/events/:id', (req, res) => {
+  const eventTitle = Number(req.params.id)
+  const updates = req.body
 
+  Event.findById(req.params.id)
+    .then(entity => {
+      return entity.update(updates)
+    })
+    .then(final => {
+      res.status(200).res.send(final)
+    })
+    .catch(error => {
+      res.status(500).send({
+        message: `Something went wrong`,
+        error
+      })
+    })
+})
 
 // Create method for deleting events
+
+app.delete('/events/:id', (req, res) => {
+  const eventId = Number(req.params.id)
+
+  Event.findById(req.params.id)
+  .then(entity => {
+    return entity.destroy()
+  })
+  .then(_ => {
+    res.status(200).res.send({
+      message: 'The event was deleted succesfully'
+    })
+  })
+  .catch(error => {
+    res.status(500).send({
+      message: `Something went wrong`,
+      error
+    })
+  })
+})
